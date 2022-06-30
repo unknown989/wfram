@@ -110,6 +110,6 @@ export default class WFram {
         }
         const r: WFramRoute = this.routes.find((rt: WFramRoute) => rt.path === url.pathname) || { name: "404", path: "*", view: "!HTML<html><body><h1>404 Page not found</h1></body></html>", controller: () => { } };
         const status = r.name !== "404" ? 200 : 404;
-        return new Response(await this.renderTemplate(r), { status, headers: this.get_headers() });
+        return new Response(await this.renderTemplate(r, req), { status, headers: this.get_headers() });
     }
 }
