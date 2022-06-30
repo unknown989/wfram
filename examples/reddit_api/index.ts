@@ -1,8 +1,7 @@
+// deno-lint-ignore-file no-explicit-any
 import * as WFram from "https://deno.land/x/wfram@1.2.2/wfram.ts";
-import { readerFromStreamReader } from "https://deno.land/std@0.146.0/streams/conversion.ts";
 
 const read_body = async (body: ReadableStream<Uint8Array>): Promise<string | undefined> => {
-    let res = "";
     const reader: ReadableStreamDefaultReader<Uint8Array> | undefined = body?.getReader();
     if (!reader) { return; }
     const stream = new Response(new ReadableStream({
@@ -45,7 +44,7 @@ const sub_controller: WFram.Controller = async (req: Request): Promise<WFram.KVT
         params["subreddit"] = "r/" + params["subreddit"];
     }
 
-    let datavalue: string[] = [];
+    const datavalue: string[] = [];
 
     const res = await (await fetch(`https://reddit.com/${params["subreddit"]}.json`)).json();
 
