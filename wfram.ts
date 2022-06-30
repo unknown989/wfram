@@ -1,4 +1,7 @@
 import { serve } from "https://deno.land/std@0.145.0/http/server.ts";
+import * as path from "https://deno.land/std@0.146.0/path/mod.ts";
+import * as mimeTypes from "https://deno.land/x/mime_types@1.0.0/mod.ts";
+
 
 
 export type WFramConfig = {
@@ -24,14 +27,20 @@ export default class WFram {
     port: number;
     host: string;
     routes: WFramRoute[];
+    assets: string[];
     headers: Set<Record<string, string>>;
 
-    constructor(config: WFramConfig) {
+
+    constructor() {
         this.routes = [];
-        this.port = config.port || 5000;
-        this.host = config.host || "";
+        this.assets = [];
+        this.port = 5000;
+        this.host = "";
         this.headers = new Set();
         this.headers.add({ key: "Content-Type", value: "text/html" });
+    }
+    set_assets(asset_path: string) {
+        this.assets.push(asset_path);
     }
     get_headers() {
         const obj: Record<string, string> = {};
@@ -54,6 +63,9 @@ export default class WFram {
             })
         }
         return nc;
+    }
+    async readFile(filename: string): Promise<Uint8Array> {
+        return await Deno.readFile(filename);
     }
 
     async listen(config?: WFramConfig) {
@@ -80,6 +92,22 @@ export default class WFram {
     // deno-lint-ignore no-explicit-any
     async handler(this: any, req: Request): Promise<Response> {
         const url = new URL(req.url);
+        const a: string | undefined = this.assets.find((asset: string) => url.pathname.startsWith(asset));
+        if (a) {
+            const filename = path.join(Deno.cwd(), a, "../" + url.pathname);
+            let filecontent = "";
+            try {
+                filecontent = await this.readFile(filename);
+            } catch (e) {
+
+
+                if (e.name === "NotFound") {
+                    return new Response(await this.renderTemplate({ name: "404", path: "*", view: "!HTML<html><body><h1>404 Asset not found</h1></body></html>", controller: () => { } }), { status: 404, headers: { "Content-Type": "text/html" } })
+                }
+            }
+
+            return new Response(filecontent, { status: 200, headers: { ...this.get_headers(), "Content-Type": mimeTypes.lookup(path.join(Deno.cwd(), a, "../" + url.pathname)) } });
+        }
         const r: WFramRoute = this.routes.find((rt: WFramRoute) => rt.path === url.pathname) || { name: "404", path: "*", view: "!HTML<html><body><h1>404 Page not found</h1></body></html>", controller: () => { } };
         const status = r.name !== "404" ? 200 : 404;
         return new Response(await this.renderTemplate(r), { status, headers: this.get_headers() });
