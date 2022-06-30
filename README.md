@@ -4,7 +4,7 @@ A deno javascript runtime lite MVC web framework
 
 # Import
 
-`import * as WFram from "https://deno.land/x/wfram@1.0/wfram.ts";`
+`import * as WFram from "https://deno.land/x/wfram@latest/wfram.ts";`
 
 # Examples
 Clone this repo and visit the `examples/` folder
