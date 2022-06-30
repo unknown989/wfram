@@ -1,12 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subreddit - $title</title>
+    <link rel="shortcut icon" href="/public/favicon" type="image/x-icon">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+        a {
+            all: unset;
+        }
+
+        .post {
+            max-width: 400px;
+            width: 400px;
+            min-width: 400px;
+            overflow: hidden;
+            border-radius: 32px;
+            padding-bottom: .5rem;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+            font-family: 'Bebas Neue';
+        }
+
+        .post img {
+            width: 400px;
+        }
+
+        .posts {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+    </style>
 </head>
+
 <body>
-    $data
+    <div class="posts">
+        $data
+    </div>
 </body>
+
 </html>

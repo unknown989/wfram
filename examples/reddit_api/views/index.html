@@ -6,13 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get latest posts on a subreddit</title>
+    <link rel="shortcut icon" href="/public/favicon.ico" type="image/x-icon">
 </head>
 
 <body>
-    <form action="/sub" method="get">
-        <input type="text" name="subreddit" placeholder="Type a subreddit...">
+    <form action="/sub" method="post">
+        <input type="text" name="subreddit" placeholder="Type a subreddit..." required>
         <button type="submit">Go</button>
     </form>
+
 </body>
 
 </html>
