@@ -20,7 +20,7 @@ export type KVType = {
     value: any
 }
 
-export type Controller = () => KVType[] | void;
+export type Controller = (req: Request) => KVType[] | void;
 
 
 export default class WFram {
@@ -50,12 +50,12 @@ export default class WFram {
 
         return obj;
     }
-    async renderTemplate(route: WFramRoute): Promise<string> {
+    async renderTemplate(route: WFramRoute, req: Request): Promise<string> {
         if (route.view.startsWith("!HTML")) {
             return route.view.slice(5);
         }
         const { view, controller } = route;
-        const map = controller();
+        const map = controller(req);
         let nc = await Deno.readTextFile(`views/${view}.html`);
         if (map) {
             map.forEach(({ key, value }) => {
