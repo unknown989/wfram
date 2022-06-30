@@ -1,4 +1,4 @@
-import * as WFram from "https://deno.land/x/wfram@1.0/wfram.ts";
+import * as WFram from "https://deno.land/x/wfram@latest/wfram.ts";
 
 const wf = new WFram.default({ port: 8080, host: "localhost" });
 
