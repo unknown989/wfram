@@ -1,22 +1,14 @@
-name: "Action major version tag"
+name: Keep the versions up-to-date
 
 on:
-  release:
-    types:
-      - published
-      - edited
+  push:
+    branches:
+      - main
 
 jobs:
-  latest:
-    name: Update action tags
-    runs-on: ubuntu-latest
+  actions-tagger:
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: Actions-R-Us/actions-tagger@latest
         with:
-          ref: ${{ github.ref }}
-
-      - name: "🚀 publish action"
-        uses: Actions-R-Us/actions-tagger@v2
-        with:
-          publish_latest_tag: false
-          prefer_branch_releases: false
+          publish_latest_tag: true
