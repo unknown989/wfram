@@ -1,53 +1,27 @@
 // deno-lint-ignore-file no-explicit-any
-import * as WFram from "https://deno.land/x/wfram@1.2.2/wfram.ts";
+import * as WFram from "https://deno.land/x/wfram@1.2.3/wfram.ts";
 
-const read_body = async (body: ReadableStream<Uint8Array>): Promise<string | undefined> => {
-    const reader: ReadableStreamDefaultReader<Uint8Array> | undefined = body?.getReader();
-    if (!reader) { return; }
-    const stream = new Response(new ReadableStream({
-        start(controller) {
-            return pump();
-            function pump(): any {
-                return reader?.read().then(({ done, value }) => {
-                    // When no more data needs to be consumed, close the stream
-                    if (done) {
-                        controller.close();
-                        return;
-                    }
-                    // Enqueue the next data chunk into our target stream
-                    controller.enqueue(value);
-                    return pump();
-                });
-            }
-        }
-    }));
-    return await stream.text();
-}
-const params_to_record = (params: URLSearchParams): Record<string, string> => {
-    const record: Record<string, string> = {};
-    Array.from(params.entries()).map((param) => {
-        record[param[0]] = param[1];
-    })
-
-    return record;
-}
-
+// /sub route controller
 const sub_controller: WFram.Controller = async (req: Request): Promise<WFram.KVType[]> => {
-x
     let params: Record<string, string> = {};
+
     if (!req.body) {
         return new Promise(() => { });
     }
-    const body = await read_body(req.body);
-    params = params_to_record(new URLSearchParams(body));
+    // Getting the params sent from <form method="post">
+    const body: string | undefined = await WFram.Utils.read_body(req.body); // As a string
+
+    // Turning the params string `const body` to a Key-Value (Record<string,string>) type
+    params = WFram.Utils.params_to_record(new URLSearchParams(body));
     if (!params["subreddit"].startsWith("r/")) {
         params["subreddit"] = "r/" + params["subreddit"];
     }
 
     const datavalue: string[] = [];
-
+    // Fetching from reddit's public API
     const res = await (await fetch(`https://reddit.com/${params["subreddit"]}.json`)).json();
 
+    // Checking if the subreddit is down/banned
     if (res.reason == "banned") {
         return [{ key: "title", value: params["subreddit"] }, { key: "data", value: "Subreddit Banned" }]
     }
@@ -55,27 +29,35 @@ x
         return [{ key: "title", value: params["subreddit"] }, { key: "data", value: "Subreddit not found" }]
     }
 
+    // Our custom HTML template
     const htmlcontent = `<a href="$url" target="_blank"><div class="post">
         <img width=400 src="$img" alt="">
         <h1>$title</h1>
         <span>$user</span>
     </div></a>`;
 
+    // Replacing the template's variables with their corresponding values
     [...res.data.children].map((child: any) => {
 
         datavalue.push(htmlcontent.replace("$img", child.data["url_overridden_by_dest"]).replace("$title", child.data["title"]).replace("$user", "u/" + child.data["author_fullname"]).replace("$url", "https://reddit.com" + child.data["permalink"]))
         return;
     })
 
+    // Building the return value
     const data: WFram.KVType[] = [{ key: "title", value: params["subreddit"] }, { key: "data", value: datavalue.join("") }];
 
     return data;
 }
 
+// Initiating WFram
 const wf = new WFram.default();
 
-wf.add_route({ name: "index", path: "/", view: "index", controller: () => { } });
-wf.add_route({ name: "sub", path: "/sub", view: "sub", controller: sub_controller })
+// Adding routes
+wf.add_route({ name: "index", path: "/", view: "index", controller: () => { } }); // index route '/'
+wf.add_route({ name: "sub", path: "/sub", view: "sub", controller: sub_controller }) // sub route '/sub'
+
+// Setting the public assets folder
 wf.set_assets("/public/")
 
+// Running the server on port 8080
 wf.listen({ port: 8080 })
