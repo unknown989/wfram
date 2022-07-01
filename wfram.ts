@@ -22,6 +22,38 @@ export type KVType = {
 
 export type Controller = (req: Request) => Promise<KVType[]> | void;
 
+export class Utils {
+    public static read_body = async (body: ReadableStream<Uint8Array>): Promise<string | undefined> => {
+        const reader: ReadableStreamDefaultReader<Uint8Array> | undefined = body?.getReader();
+        if (!reader) { return; }
+        const stream = new Response(new ReadableStream({
+            start(controller) {
+                return pump();
+                function pump(): any {
+                    return reader?.read().then(({ done, value }) => {
+                        // When no more data needs to be consumed, close the stream
+                        if (done) {
+                            controller.close();
+                            return;
+                        }
+                        // Enqueue the next data chunk into our target stream
+                        controller.enqueue(value);
+                        return pump();
+                    });
+                }
+            }
+        }));
+        return await stream.text();
+    }
+    public static params_to_record = (params: URLSearchParams): Record<string, string> => {
+        const record: Record<string, string> = {};
+        Array.from(params.entries()).map((param) => {
+            record[param[0]] = param[1];
+        })
+
+        return record;
+    }
+}
 
 export default class WFram {
     port: number;
